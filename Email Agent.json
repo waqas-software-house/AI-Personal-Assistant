@@ -1,0 +1,413 @@
+{
+  "name": "ai team 1 email agent",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "769df12a-1294-496f-9cc1-764e7ae063ff",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "You are a professional email assistant for **WAQAS Software House**. Write all emails in polished, professional HTML format and sign off with your company.\n\n**Mandatory Tool Rules:**\nApply the following sequences **only** when performing these three actions:\n\n1. **Label Email:** Get Emails → Get Labels → Apply the correct label using the retrieved IDs.\n2. **Mark Unread:** Get Emails → Mark the specified email as unread using its message ID.\n3. **Reply to Email:** Get Emails → Retrieve the correct message ID → Send the reply.\n\n**Date & Time and Final Output:** Use a supported dynamic expression that resolves to the actual current date and time at execution. Never output unresolved placeholders such as `{{now}}`, `{{CURRENT_DATETIME}}`, or any template expression literally. Verify all dynamic values are resolved before sending. If the expression cannot be evaluated, omit the timestamp rather than sending a placeholder.\n\nExecute each tool on a separate line, follow the required sequence, and never skip mandatory steps."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "3b37bb73-d8c7-45e4-9adb-a7b933200a16",
+      "name": "AI Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        208
+      ],
+      "id": "ce5c2d95-1539-40e9-b533-7704bdd4871c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3cf2b635-b6aa-4643-ae7f-7b39c516e640",
+              "name": "response",
+              "value": "={{ $json.output }}\n\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        592,
+        -96
+      ],
+      "id": "dd809d9e-5531-45e0-bbfe-cd37ca8a0a1c",
+      "name": "Success"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "582a7ba7-aa90-4422-9906-d205a26e2163",
+              "name": "responce",
+              "value": "Unable to performthe task. Please try again.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        592,
+        96
+      ],
+      "id": "7ea49b26-8a08-4d1f-a6e9-a72881fb1af3",
+      "name": "try again"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        224
+      ],
+      "id": "be0355e4-9d06-4503-b3db-a8a843e34efc",
+      "name": "Send email",
+      "webhookId": "668d31b9-34e0-4c1f-a208-372103d41e3b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "MzR9scQedJ7Ttsnl",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        352,
+        272
+      ],
+      "id": "178dafc2-4327-4f8b-9d1e-22df78b575bc",
+      "name": "Create a draft in Gmail",
+      "webhookId": "4f990a17-bc55-43b4-acfb-0f1a01d45a87",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "MzR9scQedJ7Ttsnl",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Limit', ``, 'number') }}",
+        "filters": {
+          "sender": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sender', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        304
+      ],
+      "id": "ea7240d2-c02e-45d5-9962-cc8135599e6a",
+      "name": "Get many messages in Gmail",
+      "webhookId": "12f2b277-32b0-4e63-9465-27f710b79b11",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "MzR9scQedJ7Ttsnl",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "label"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        400
+      ],
+      "id": "1459b76b-f2eb-499e-b6c1-6b442c5201b0",
+      "name": "Get many labels in Gmail",
+      "webhookId": "910c8e10-3c8e-447f-985c-d2a670148bba",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "MzR9scQedJ7Ttsnl",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "labelIds": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_Names_or_IDs', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        320
+      ],
+      "id": "f32282eb-fa55-463d-8b1a-28f0bfc4e514",
+      "name": "Add label to message in Gmail",
+      "webhookId": "59e3eb62-3efe-46c1-b481-e86e2464d78d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "MzR9scQedJ7Ttsnl",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsUnread",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        432
+      ],
+      "id": "24de749e-0b61-4d24-adf0-ec5dcfb36eea",
+      "name": "Mark a message as unread in Gmail",
+      "webhookId": "00ca1d5a-6aed-4fd7-ba17-a1fa4b80432d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "MzR9scQedJ7Ttsnl",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        976,
+        448
+      ],
+      "id": "2ed37689-9336-40d9-9b9f-2ebf086ebc3e",
+      "name": "Reply to a message in Gmail",
+      "webhookId": "607239c6-bcc0-4e23-af95-ca0a4971018d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "MzR9scQedJ7Ttsnl",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "make the ahmad email pass92620@gmail.com mark as unread"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "try again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many labels in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark a message as unread in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "55faeef3-26bd-4d8f-a400-4fae296b73c8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "528539de2d7b690c1d1c7364c2f2353adccd7fd58ad72fec5cdf97e70b2e652b"
+  },
+  "nodeGroups": [],
+  "id": "byHYTKYJU8XjN2Np",
+  "tags": []
+}

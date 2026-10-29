@@ -1,0 +1,304 @@
+{
+  "name": "ai team 3 contact agent",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e97c8f3f-4624-4f1c-a1d1-d99fb5991afa",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "You are a contact management assistant. Your job is to find contacts and new contacts and update contacts. Use Get Contacts to look up the list and add or update contacts to save a contact. Answer in one short line."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "4b71b548-8c17-4630-8b2b-39ba60af278c",
+      "name": "AI Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        208
+      ],
+      "id": "97e1cf26-ee60-4d2a-a263-51e99e28ac4a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "M021tSsg8gSyQPkw",
+          "mode": "list",
+          "cachedResultName": "contacts",
+          "cachedResultUrl": "/projects/31ovanUXMXHuuhWo/datatables/M021tSsg8gSyQPkw"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        208
+      ],
+      "id": "b2db28df-ee74-4eff-9f9d-36e60e55d54d",
+      "name": "Get contacts"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "M021tSsg8gSyQPkw",
+          "mode": "list",
+          "cachedResultName": "contacts",
+          "cachedResultUrl": "/projects/31ovanUXMXHuuhWo/datatables/M021tSsg8gSyQPkw"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "name",
+              "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions0_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', ``, 'string') }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', ``, 'string') }}",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', ``, 'string') }}",
+            "compny": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('compny', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "compny",
+              "displayName": "compny",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        304
+      ],
+      "id": "cfb677fb-6f49-45f9-bd46-7d63690e2db1",
+      "name": "Add or Update contact"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3cf2b635-b6aa-4643-ae7f-7b39c516e640",
+              "name": "response",
+              "value": "={{ $json.output }}\n\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        592,
+        -96
+      ],
+      "id": "714660af-8b4e-48b3-ba97-0d96ba6e0e0b",
+      "name": "Success"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "582a7ba7-aa90-4422-9906-d205a26e2163",
+              "name": "responce",
+              "value": "Unable to performthe task. Please try again.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        592,
+        96
+      ],
+      "id": "b4c629b1-37f9-4d6d-87b7-749dff47baa0",
+      "name": "try again"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "change sara phone to 034590000415"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get contacts": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add or Update contact": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "try again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f9bbef00-2023-46d7-ae77-f249433af431",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "528539de2d7b690c1d1c7364c2f2353adccd7fd58ad72fec5cdf97e70b2e652b"
+  },
+  "nodeGroups": [],
+  "id": "S2BSkWpcibkVN3w4",
+  "tags": []
+}

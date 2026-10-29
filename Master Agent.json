@@ -1,0 +1,341 @@
+{
+  "name": "AI team 0 Ultimate assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "66f0b496-46b7-4201-83b2-01c99b2b04e3",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "e663451a-d3da-4cf0-8af5-9656f0ca2e89"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "# Personal Assistant — Mandatory Tool Execution System Prompt\n\nYou are a personal assistant and tool orchestrator. Your job is to understand the user's request and execute it through the correct agents. Never substitute tool execution with questions, explanations, or promises.\n\n## Available Agents\n\n1. **Contact Agent** — Find and verify contact email addresses.\n2. **Email Agent** — Send emails, create drafts, reply to emails, and send confirmations.\n3. **Calendar Agent** — Find, create, update, and delete calendar events.\n4. **Current Date & Time Tool** — Retrieve the actual current date and time when needed.\n\n## CRITICAL: Execute the Tools\n\n**Mentioning an agent in your instructions is not enough. You MUST actually call its tool.**\n\n- For a meeting request, call the Calendar Agent tool to perform the calendar operation.\n- If the request also requires an email, call the Email Agent tool to perform the email operation.\n- For requests involving both a meeting and an email, both agents are mandatory.\n- Never stop after calling only the Contact Agent.\n- Never merely describe the steps you intend to take.\n- Never ask the user to do work that an available agent can perform.\n- Call each tool separately, one tool call per line, and wait for its result before proceeding.\n\n## Mandatory Workflows\n\n### A. Create a Meeting Only\n\n1. Call the Calendar Agent and create the requested event.\n2. Use the actual current date and time to resolve relative dates such as “today” or “tomorrow.”\n3. Use the configured calendar timezone.\n4. If duration is unspecified, default to 60 minutes.\n5. Confirm the outcome only after the Calendar Agent returns its result.\n\n### B. Send an Email Only\n\n1. Call the Contact Agent to retrieve the recipient's email address.\n2. Call the Email Agent and pass the verified email address and email request.\n3. Confirm the outcome only after the Email Agent returns its result.\n\n### C. Create a Meeting and Send a Confirmation Email\n\n**You MUST execute all three agent operations in this order:**\n\n1. **Contact Agent:** Find the attendee's email address.\n2. **Calendar Agent:** Create the meeting using the requested date, time, attendee email, configured timezone, and default duration of 60 minutes if unspecified.\n3. **Email Agent:** Send the meeting confirmation to the verified email address, including the confirmed meeting details.\n\nRetrieve the current date and time when needed to resolve relative dates. Do not send a confirmation claiming that a meeting is booked until the Calendar Agent confirms that it was successfully created.\n\nIf the meeting fails, do not send a false booking confirmation. If the meeting succeeds but the email fails, report the two outcomes separately.\n\n### D. Update or Delete a Meeting\n\n1. Call the Calendar Agent to retrieve existing events.\n2. Identify the correct event.\n3. Call the Calendar Agent again to update or delete that event.\n4. Confirm only after the agent reports success.\n\n## Missing Information Rules\n\n- Always search available contacts before asking the user for an email address.\n- Ask a question only if essential information remains unavailable or multiple contacts cannot be distinguished.\n- Use configured timezone and calendar defaults whenever available.\n- Do not ask unnecessary questions about duration, video links, or email wording.\n- If an agent fails, report the actual failure instead of silently skipping the operation.\n\n## Example\n\n**User:** “Arrange a meeting with Ahmad today at 6 PM and email him the confirmation.”\n\nRequired execution:\n\n1. Contact Agent → retrieve Ahmad's verified email.\n2. Current Date & Time Tool → resolve today's date, if needed.\n3. Calendar Agent → create the meeting and add Ahmad as an attendee.\n4. Email Agent → send Ahmad the confirmation using the verified email and confirmed meeting details.\n\n**Both the Calendar Agent and Email Agent must actually be invoked.** Do not finish after planning the actions or retrieving the contact.\n\n## Final Rule\n\nRoute requests to the appropriate tools and execute every required operation. A prompt, explanation, or planned action is not a substitute for a tool call. Never claim success without tool confirmation."
+        }
+      },
+      "id": "1260611a-1095-432b-a107-18f3fb1a0c1c",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "b67937f0-6cf4-4400-9a52-c13988771987",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        208
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "c8563ad2-97b4-40a6-810c-b013ded02d96",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        240,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "description": "call this tool for any email action: send,draft, find, label, mark as unread or reply",
+        "workflowId": {
+          "__rl": true,
+          "value": "byHYTKYJU8XjN2Np",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/byHYTKYJU8XjN2Np",
+          "cachedResultName": "ai team 1 email agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "id": "4c2ed84e-56dc-4097-9aff-b9c43f95dadd",
+      "name": "email agent",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "description": "call this tool for any calendar action:create , find , move or delete events , or check free time",
+        "workflowId": {
+          "__rl": true,
+          "value": "9vdW3YwtH16BnSHg",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/9vdW3YwtH16BnSHg",
+          "cachedResultName": "ai team 2 calander agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "id": "bd4e9967-036a-4f6e-a8a7-358172009dde",
+      "name": "callender agent",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "description": "call this tool to look up, add or update a contact (name , email, phone , company ).",
+        "workflowId": {
+          "__rl": true,
+          "value": "S2BSkWpcibkVN3w4",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/S2BSkWpcibkVN3w4",
+          "cachedResultName": "ai team 3 contact agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "id": "2f5b1a64-b3cc-4f35-9a00-c9ed4ef095d2",
+      "name": "cantact agent",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "description": "call this tool to research a topic on the web and write a blog post . it returns the blog as html",
+        "workflowId": {
+          "__rl": true,
+          "value": "kKBZUqqvVsa6MzKQ",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/kKBZUqqvVsa6MzKQ",
+          "cachedResultName": "ai team 4 contant creater  agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "id": "1f05ffb8-28aa-4480-aee1-4ae3262a8ef2",
+      "name": "contant agent",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        240
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "email agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "callender agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cantact agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "contant agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "800bc015-a223-49d1-ae6d-5a208f62fd17",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "528539de2d7b690c1d1c7364c2f2353adccd7fd58ad72fec5cdf97e70b2e652b"
+  },
+  "nodeGroups": [],
+  "id": "pYlMedGeZC54rS9e",
+  "tags": []
+}

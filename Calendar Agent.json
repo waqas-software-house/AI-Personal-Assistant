@@ -1,0 +1,378 @@
+{
+  "name": "ai team 2 calander agent",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f188f4a2-f97f-4759-9e9b-27b4d35e0424",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "You are a professional Calendar Assistant.\n\n1. **Create Event:** Include attendees when attendees are provided.\n2. **Update/Delete Event:** Always run Get Events first, identify the correct event, then update or delete it.\n3. **Date & Time:** Use today's date and current time dynamically; never hardcode dates or output unresolved placeholders.\n4. **Default Duration:** If no duration is specified, schedule the meeting for one hour.\n\nExecute each tool on a separate line, follow the correct sequence, and never claim success unless confirmed by the tool."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "ec862e68-1795-4a47-b247-6c339c5e3e7e",
+      "name": "AI Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        208
+      ],
+      "id": "dca7d7d3-64f4-45cb-b350-3db315fb8fe4",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3cf2b635-b6aa-4643-ae7f-7b39c516e640",
+              "name": "response",
+              "value": "={{ $json.output }}\n\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        592,
+        -96
+      ],
+      "id": "28b2c6b5-567b-4634-b740-cd756e817786",
+      "name": "Success"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "582a7ba7-aa90-4422-9906-d205a26e2163",
+              "name": "responce",
+              "value": "Unable to performthe task. Please try again.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        592,
+        96
+      ],
+      "id": "1e10363c-6785-4347-88df-0a34607752f4",
+      "name": "try again"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "muhammadshoaibmkd3456@gmail.com",
+          "mode": "list",
+          "cachedResultName": "muhammadshoaibmkd3456@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        208
+      ],
+      "id": "58249bdd-7eec-49a7-a30f-521d7a624a3d",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "mMjipLgYYE1C0bmW",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "muhammadshoaibmkd3456@gmail.com",
+          "mode": "list",
+          "cachedResultName": "muhammadshoaibmkd3456@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('attendees0_Attendees', ``, 'string') }}"
+          ],
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        512,
+        336
+      ],
+      "id": "1ea61e6b-2995-4f8a-aca9-9e9345eb4dda",
+      "name": "Create an event with attendee",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "mMjipLgYYE1C0bmW",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "muhammadshoaibmkd3456@gmail.com",
+          "mode": "list",
+          "cachedResultName": "muhammadshoaibmkd3456@gmail.com"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        448
+      ],
+      "id": "87c8b972-bb6b-4cef-a3d7-f5baa1d77063",
+      "name": "Get events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "mMjipLgYYE1C0bmW",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "muhammadshoaibmkd3456@gmail.com",
+          "mode": "list",
+          "cachedResultName": "muhammadshoaibmkd3456@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "updateFields": {
+          "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        752,
+        448
+      ],
+      "id": "12c3b446-fb94-49d8-a423-4aa232b4b4e2",
+      "name": "update events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "mMjipLgYYE1C0bmW",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "muhammadshoaibmkd3456@gmail.com",
+          "mode": "list",
+          "cachedResultName": "muhammadshoaibmkd3456@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        880,
+        448
+      ],
+      "id": "c8bada34-180f-48e1-8b7f-bae45bfd5c40",
+      "name": "delet events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "mMjipLgYYE1C0bmW",
+          "name": "Google Calendar account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "create a meeting called study session tomarrow at 5 pm"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "try again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event with attendee": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get events": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update events": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delet events": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "dc98df9c-d391-4a1d-9083-fc880894162a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "528539de2d7b690c1d1c7364c2f2353adccd7fd58ad72fec5cdf97e70b2e652b"
+  },
+  "nodeGroups": [],
+  "id": "9vdW3YwtH16BnSHg",
+  "tags": []
+}
